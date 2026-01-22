@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    container_name: repo-ingestor-web
+    ports:
+      - "8000:8000"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CLONE_BASE_DIR=/tmp/repos
+    depends_on:
+      - redis
+
+  worker:
+    build: .
+    container_name: repo-ingestor-worker
+    command: ["celery", "-A", "app.tasks.celery_app", "worker", "--loglevel=info", "--concurrency=2"]
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CLONE_BASE_DIR=/tmp/repos
+    depends_on:
+      - redis
