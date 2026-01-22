@@ -5,6 +5,17 @@ services:
     ports:
       - "6379:6379"
 
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: repo_ingestor
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   web:
     build: .
     container_name: repo-ingestor-web
@@ -14,8 +25,12 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - CLONE_BASE_DIR=/tmp/repos
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/repo_ingestor
+      - REDIS_URL=redis://redis:6379/0
+      - WEBHOOK_DEDUP_TTL=86400
     depends_on:
       - redis
+      - postgres
 
   worker:
     build: .
@@ -25,5 +40,11 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - CLONE_BASE_DIR=/tmp/repos
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/repo_ingestor
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - redis
+      - postgres
+
+volumes:
+  pgdata:
