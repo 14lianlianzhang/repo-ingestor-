@@ -1,9 +1,0 @@
-fastapi==0.95.2
-uvicorn[standard]==0.22.0
-GitPython==3.1.31
-celery==5.3.2
-redis==4.5.5
-pydantic==1.10.9
-python-dotenv==1.0.0
-SQLAlchemy==1.4.53
-psycopg2-binary==2.9.7
